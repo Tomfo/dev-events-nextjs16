@@ -4,37 +4,42 @@ import Image from 'next/image';
 import {Key} from 'lucide-react';
 import BookEvent from '@/components/BookEvent';
 import {getSimilarEventsBySlug} from '@/app/lib/actions/event.actions';
-const EventDetailsPage = async ({params}) => {
-  const EventDetailItem = ({icon, alt, label}) => {
-    return (
-      <div className='flex-row-gap-2 items-center'>
-        <Image src={icon} alt={alt} width={17} height={17} />
-        <p>{label}</p>
-      </div>
-    );
-  };
-
-  const EventAgenda = ({agendaItems}) => (
-    <div className='agenda'>
-      <h2>Agenda</h2>
-      <ul>
-        {agendaItems.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+import {cacheLife} from 'next/cache';
+const EventDetailItem = ({icon, alt, label}) => {
+  return (
+    <div className='flex-row-gap-2 items-center'>
+      <Image src={icon} alt={alt} width={17} height={17} />
+      <p>{label}</p>
     </div>
   );
+};
 
-  const EventTags = ({tags}) => (
-    <div className='flex flex-row gap-1.5 flex-wrap'>
-      {tags.map((tag) => (
-        <div className='pill' key={tag}>
-          {tag}
-        </div>
+const EventAgenda = ({agendaItems}) => (
+  <div className='agenda'>
+    <h2>Agenda</h2>
+    <ul>
+      {agendaItems.map((item) => (
+        <li key={item}>{item}</li>
       ))}
-    </div>
-  );
-  const bookings = 10;
+    </ul>
+  </div>
+);
+
+const EventTags = ({tags}) => (
+  <div className='flex flex-row gap-1.5 flex-wrap'>
+    {tags.map((tag) => (
+      <div className='pill' key={tag}>
+        {tag}
+      </div>
+    ))}
+  </div>
+);
+const bookings = 10;
+
+const EventDetailsPage = async ({params}) => {
+  'use cache';
+  cacheLife('hours');
+
   const {slug} = await params;
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   const response = await fetch(`${BASE_URL}/api/events/${slug}`);
@@ -110,7 +115,7 @@ const EventDetailsPage = async ({params}) => {
             ) : (
               <p className='text-sm'>Be the first to book your Spot!</p>
             )}
-            <BookEvent />
+            <BookEvent eventId={event._id} slug={event.slug} />
           </div>
         </aside>
       </div>
